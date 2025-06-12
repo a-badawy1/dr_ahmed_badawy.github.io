@@ -77,11 +77,67 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Add active class to navigation links based on scroll position
-    const sections = document.querySelectorAll('section');
-    const navLinks = document.querySelectorAll('.nav-links a');
+    // Mobile sidebar functionality
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const floatingMenuButton = document.querySelector('.floating-menu-button');
+    const mobileSidebar = document.querySelector('.mobile-sidebar');
+    const closeSidebar = document.querySelector('.close-sidebar');
+    const sidebarOverlay = document.querySelector('.sidebar-overlay');
+    const sidebarLinks = document.querySelectorAll('.sidebar-links a');
 
+    function toggleSidebar() {
+        floatingMenuButton.classList.toggle('active');
+        mobileSidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+        document.body.style.overflow = mobileSidebar.classList.contains('active') ? 'hidden' : '';
+    }
+
+    floatingMenuButton.addEventListener('click', toggleSidebar);
+    closeSidebar.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+
+    // Close sidebar when clicking a link
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (mobileSidebar.classList.contains('active')) {
+                toggleSidebar();
+            }
+        });
+    });
+
+    // Handle scroll behavior for floating menu button
     window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        const navHeight = nav.offsetHeight;
+        
+        // Show floating button when scrolled past nav height
+        if (currentScroll > navHeight) {
+            floatingMenuButton.style.transform = 'translateY(0)';
+        } else {
+            floatingMenuButton.style.transform = 'translateY(-100px)';
+        }
+
+        // Update nav classes for animation
+        if (currentScroll > lastScroll && currentScroll > navHeight) {
+            nav.classList.add('scroll-down');
+            nav.classList.remove('scroll-up');
+        } else if (currentScroll < lastScroll) {
+            nav.classList.add('scroll-up');
+            nav.classList.remove('scroll-down');
+        }
+
+        lastScroll = currentScroll;
+
+        // Update active links
+        updateActiveLink();
+    });
+
+    // Update active state for both desktop and mobile navigation
+    function updateActiveLink() {
+        const sections = document.querySelectorAll('section');
+        const desktopLinks = document.querySelectorAll('.nav-links a');
+        const mobileLinks = document.querySelectorAll('.sidebar-links a');
+        
         let current = '';
         
         sections.forEach(section => {
@@ -92,13 +148,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        navLinks.forEach(link => {
+        // Update desktop navigation
+        desktopLinks.forEach(link => {
             link.classList.remove('active');
             if (link.getAttribute('href').slice(1) === current) {
                 link.classList.add('active');
             }
         });
-    });
+
+        // Update mobile navigation
+        mobileLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').slice(1) === current) {
+                link.classList.add('active');
+            }
+        });
+    }
 
     // Add hover effect to timeline items
     const timelineItems = document.querySelectorAll('.timeline-item');
